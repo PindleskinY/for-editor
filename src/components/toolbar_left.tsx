@@ -105,16 +105,24 @@ class Toolbars extends React.Component<IP, IS> {
             H4
           </li>
         )}
+        {toolbar.bold && (
+          <li onClick={() => this.onClick('bold')} title={words.bold}>
+            B
+          </li>
+        )}
+        {toolbar.unOrderList && (
+          <li onClick={() => this.onClick('unOrderList')} title={words.unOrderList}>
+            <i className="fa fa-list-ul" />
+          </li>
+        )}
+        {toolbar.orderList && (
+          <li onClick={() => this.onClick('orderList')} title={words.orderList}>
+            <i className="fa fa-list-ol" />
+          </li>
+        )}
         {toolbar.img && (
-          <li className="for-toolbar-img" onMouseOver={() => this.imgMouseOver()} onMouseOut={() => this.imgMouseOut()}>
-            <i className="foricon for-image" />
-            <ul style={imgHidden ? {display: 'none'} : {}}>
-              <li onClick={() => this.addImgUrl()}>{words.addImgLink}</li>
-              <li>
-                {words.addImg}
-                <input type="file" accept="image/gif,image/jpeg,image/jpg,image/png,image/svg" onChange={(e) => this.addImgFile(e)}/>
-              </li>
-            </ul>
+          <li className="for-toolbar-img" onClick={() => this.onClick('img')} title={words.img}>
+            <i className="fa fa-photo" />
           </li>
         )}
         {toolbar.link && (
@@ -124,7 +132,7 @@ class Toolbars extends React.Component<IP, IS> {
         )}
         {toolbar.code && (
           <li onClick={() => this.onClick('code')} title={words.code}>
-            <i className="foricon for-code" />
+            <i className="fa fa-code" />
           </li>
         )}
         {toolbar.save && (

@@ -15,6 +15,9 @@ export interface IToolbar {
   h2?: boolean
   h3?: boolean
   h4?: boolean
+  bold?: boolean
+  unOrderList?: boolean
+  orderList?: boolean
   img?: boolean
   link?: boolean
   code?: boolean
@@ -32,6 +35,9 @@ export interface IWords {
   h2?: string
   h3?: string
   h4?: string
+  bold?: string
+  unOrderList?: string
+  orderList?: string
   undo?: string
   redo?: string
   img?: string
@@ -139,26 +145,25 @@ class MdEditor extends React.Component<IP, IS> {
       }, 500)
     }
     if (subfield !== preProps.subfield && this.state.subfield !== subfield) {
-      this.setState({ subfield });
+      this.setState({ subfield })
     }
     if (preview !== preProps.preview && this.state.preview !== preview) {
-      this.setState({ preview });
+      this.setState({ preview })
     }
     if (expand !== preProps.expand && this.state.expand !== expand) {
-      this.setState({ expand });
+      this.setState({ expand })
     }
   }
 
   initLanguage = (): void => {
-    const { language } = this.props
-    const lang = CONFIG.langList.indexOf(language) >= 0 ? language : 'zh-CN'
+    const lang = 'zh-CN'
     this.setState({
       words: CONFIG.language[lang]
     })
   }
 
   // 输入框改变
-  handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>): void => {
+  handleChange = (e: any): void => {
     const value = e.target.value
     this.props.onChange(value)
   }
@@ -215,6 +220,62 @@ class MdEditor extends React.Component<IP, IS> {
     })
   }
 
+  // 回车事件
+  enter = (e: any): void => {
+    if (e.keyCode === 13) {
+      const $vm = this.$vm.current
+      const value = $vm.value
+      const start = $vm.selectionStart
+      const end = $vm.selectionEnd
+      if ($vm.value.substr(0, this.$vm.current.selectionStart).match('.*\\* .*$')) {
+        // 判断是否为 (* )
+        if ($vm.value.substr(0, this.$vm.current.selectionStart).match('.*\\* $')) {
+          const prefix = '\n'
+          e.preventDefault()
+          $vm.value = value.substring(0, start - 2) + prefix + value.substring(end, value.length)
+          $vm.selectionStart = start - 1
+          $vm.selectionEnd = end - 1
+          $vm.focus()
+          this.props.onChange($vm.value)
+        }
+        // 判断是否为 (* xxx)
+        if ($vm.value.substr(0, this.$vm.current.selectionStart).match('.*\\* .+$')) {
+          const prefix = '\n* '
+          e.preventDefault()
+          $vm.value = value.substring(0, start) + prefix + value.substring(end, value.length)
+          $vm.selectionStart = start + prefix.length
+          $vm.selectionEnd = end + prefix.length
+          $vm.focus()
+          this.props.onChange($vm.value)
+        }
+      } else if ($vm.value.substr(0, this.$vm.current.selectionStart).match(' *\[0-9]*\\. .*$')) {
+        // 判断是否为 (1. )
+        if ($vm.value.substr(0, this.$vm.current.selectionStart).match('.*\[0-9]*\\. $')) {
+          const length = $vm.value.substr(0, this.$vm.current.selectionStart).match('.*\[0-9]*\\. .*$')[0].match('[0-9]+')[0].length + 1;
+          const prefix = '\n'
+          e.preventDefault()
+          $vm.value = value.substring(0, start - length - 1) + prefix + value.substring(end, value.length)
+          $vm.selectionStart = start - length
+          $vm.selectionEnd = end - length
+          $vm.focus()
+          this.props.onChange($vm.value)
+        } else if ($vm.value.substr(0, this.$vm.current.selectionStart).match('.*\[0-9]*\\. .+$')) {
+          // 判断是否为 (1. xxx)
+          const result = $vm.value.substr(0, this.$vm.current.selectionStart).match('.*\[0-9]*\\. .*$')[0]
+          const space = result.match(' *')
+          const num = result.match('[0-9]+')
+          const prefix = '\n' + space + String(parseInt(num[0]) + 1) + '. '
+          e.preventDefault()
+          $vm.value = value.substring(0, start) + prefix + value.substring(end, value.length)
+          $vm.selectionStart = start + prefix.length
+          $vm.selectionEnd = end + prefix.length
+          $vm.focus()
+          this.props.onChange($vm.value)
+        }
+      }
+    }
+  }
+
   // 菜单点击
   toolBarLeftClick = (type: string): void => {
     const { words } = this.state
@@ -238,6 +299,21 @@ class MdEditor extends React.Component<IP, IS> {
         prefix: '#### ',
         subfix: '',
         str: words.h4
+      },
+      bold: {
+        prefix: '**',
+        subfix: '**',
+        str: words.bold
+      },
+      unOrderList: {
+        prefix: '* ',
+        subfix: '',
+        str: words.unOrderList
+      },
+      orderList: {
+        prefix: '1. ',
+        subfix: '',
+        str: words.orderList
       },
       img: {
         prefix: '![alt](',
@@ -271,7 +347,7 @@ class MdEditor extends React.Component<IP, IS> {
     const otherLeftClick: any = {
       undo: this.undo,
       redo: this.redo,
-      save: this.save
+      save: this.save,
     }
     if (otherLeftClick.hasOwnProperty(type)) {
       otherLeftClick[type]()
@@ -426,6 +502,7 @@ class MdEditor extends React.Component<IP, IS> {
                   value={value}
                   disabled={disabled}
                   onChange={this.handleChange}
+                  onKeyDown={(e) => this.enter(e)}
                   placeholder={placeholder ? placeholder : words.placeholder}
                 />
               </div>

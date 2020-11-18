@@ -4,6 +4,9 @@ export interface IToolbar {
     h2?: boolean
     h3?: boolean
     h4?: boolean
+    bold?: boolean
+    unOrderList: boolean
+    orderList: boolean
     img?: boolean
     link?: boolean
     code?: boolean
@@ -20,6 +23,9 @@ export interface IWords {
     h2?: string
     h3?: string
     h4?: string
+    bold: string
+    unOrderList: string
+    orderList: string
     undo?: string
     redo?: string
     img?: string
